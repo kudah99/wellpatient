@@ -1,0 +1,186 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}Patients - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="fas fa-users me-2"></i>Patients</h1>
+            <div>
+                <a href="{% url 'import_patients' %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-file-import me-1"></i> Import
+                </a>
+                <a href="/admin/patients/patient/add/" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Add Patient
+                </a>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Patient Filter</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="id_location" class="form-label">Location</label>
+                        {{ filter_form.location }}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="id_notification_preference" class="form-label">Notification Preference</label>
+                        {{ filter_form.notification_preference }}
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check mt-4">
+                            {{ filter_form.is_active }}
+                            <label class="form-check-label" for="id_is_active">
+                                Active Patients Only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_search" class="form-label">Search</label>
+                        <div class="input-group">
+                            {{ filter_form.search }}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Patient List</h5>
+            </div>
+            <div class="card-body">
+                {% if patients %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Notification</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'patient_detail' patient.id %}">
+                                        {{ patient.get_full_name }}
+                                    </a>
+                                </td>
+                                <td>{{ patient.phone_number }}</td>
+                                <td>{% if patient.location %}{{ patient.location }}{% else %}<span class="text-muted">Not set</span>{% endif %}</td>
+                                <td>
+                                    <span class="badge {% if patient.notification_preference == 'SMS' %}bg-primary{% elif patient.notification_preference == 'WA' %}bg-success{% elif patient.notification_preference == 'BOTH' %}bg-info{% else %}bg-secondary{% endif %}">
+                                        {{ patient.get_notification_preference_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if patient.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if patient.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/patients/patient/{{ patient.id }}/change/" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'patient_detail' patient.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users text-muted fa-4x mb-3"></i>
+                    <h4 class="text-muted">No patients found</h4>
+                    <p>Try adjusting your filters or add a new patient.</p>
+                    <a href="/admin/patients/patient/add/" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus me-1"></i> Add Patient
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_location').classList.add('form-select');
+        document.getElementById('id_notification_preference').classList.add('form-select');
+        document.getElementById('id_is_active').classList.add('form-check-input');
+        document.getElementById('id_search').classList.add('form-control');
+    });
+</script>
+{% endblock %}

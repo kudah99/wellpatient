@@ -1,0 +1,9 @@
+Django>=4.2.0,<5.0
+djangorestframework>=3.14.0
+celery>=5.2.7
+redis>=4.5.4
+django-unfold>=0.6.0
+django-import-export>=3.2.0
+twilio>=8.1.0
+python-dotenv>=1.0.0
+WhatsApp-Chat-Api>=0.1.8

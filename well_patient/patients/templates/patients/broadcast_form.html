@@ -1,0 +1,272 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}New Broadcast Message - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="fas fa-paper-plane me-2"></i>
+                New Broadcast Message
+            </h1>
+            <a href="{% url 'broadcast_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Broadcasts
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Broadcast Message Form</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Message Details -->
+                    <div class="col-12">
+                        <h5>Message Details</h5>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Title*</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.title.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="{{ form.broadcast_type.id_for_label }}" class="form-label">Type*</label>
+                        {{ form.broadcast_type }}
+                        {% if form.broadcast_type.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.broadcast_type.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">Message*</label>
+                        {{ form.message }}
+                        <div class="form-text" id="character-count">0 characters</div>
+                        {% if form.message.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.message.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Delivery Options -->
+                    <div class="col-12 mt-4">
+                        <h5>Delivery Options</h5>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Notification Channels*</label>
+                        <div class="form-check">
+                            {{ form.send_sms }}
+                            <label class="form-check-label" for="{{ form.send_sms.id_for_label }}">
+                                Send via SMS
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.send_whatsapp }}
+                            <label class="form-check-label" for="{{ form.send_whatsapp.id_for_label }}">
+                                Send via WhatsApp
+                            </label>
+                        </div>
+                        {% if form.send_sms.errors or form.send_whatsapp.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.send_sms.errors %}
+                            {{ error }}
+                            {% endfor %}
+                            {% for error in form.send_whatsapp.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.scheduled_time.id_for_label }}" class="form-label">Schedule Time</label>
+                        {{ form.scheduled_time }}
+                        <div class="form-text">Leave empty to send immediately</div>
+                        {% if form.scheduled_time.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.scheduled_time.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Target Audience -->
+                    <div class="col-12 mt-4">
+                        <h5>Target Audience</h5>
+                        <div class="form-text mb-3">Select locations to target specific areas. Leave empty to send to all locations.</div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.locations.id_for_label }}" class="form-label">Locations</label>
+                        <div class="location-selection p-3 border rounded" style="max-height: 200px; overflow-y: auto;">
+                            {{ form.locations }}
+                        </div>
+                        {% if form.locations.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.locations.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> 
+                            Send Broadcast
+                        </button>
+                        <a href="{% url 'broadcast_list' %}" class="btn btn-outline-secondary ms-2">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Message Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-container p-3 bg-light rounded">
+                    <div id="preview-message"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add form-control class to input fields
+        const formControls = document.querySelectorAll('input[type="text"], input[type="email"], input[type="datetime-local"], textarea');
+        formControls.forEach(function(input) {
+            input.classList.add('form-control');
+        });
+        
+        // Add form-select class to select fields
+        const selects = document.querySelectorAll('select');
+        selects.forEach(function(select) {
+            select.classList.add('form-select');
+        });
+        
+        // Add form-check-input class to checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.classList.add('form-check-input');
+        });
+        
+        // Character counter for message
+        const messageArea = document.querySelector('#id_message');
+        const charCount = document.querySelector('#character-count');
+        
+        if (messageArea && charCount) {
+            // Update on load
+            charCount.textContent = messageArea.value.length + ' characters';
+            
+            // Update on input
+            messageArea.addEventListener('input', function() {
+                const count = messageArea.value.length;
+                charCount.textContent = count + ' characters';
+                
+                // Add warning if approaching SMS limit (160 chars)
+                if (count > 140 && count <= 160) {
+                    charCount.className = 'form-text text-warning';
+                } else if (count > 160) {
+                    charCount.className = 'form-text text-danger';
+                } else {
+                    charCount.className = 'form-text';
+                }
+            });
+        }
+        
+        // Format location checkboxes
+        const locationCheckboxes = document.querySelectorAll('input[name="locations"]');
+        locationCheckboxes.forEach(function(checkbox) {
+            const label = checkbox.nextElementSibling;
+            if (label) {
+                label.classList.add('ms-2');
+                
+                // Create a wrapper div
+                const wrapper = document.createElement('div');
+                wrapper.className = 'form-check mb-2';
+                
+                // Move the checkbox and label into the wrapper
+                const parent = checkbox.parentNode;
+                wrapper.appendChild(checkbox);
+                wrapper.appendChild(label);
+                parent.appendChild(wrapper);
+            }
+        });
+        
+        // Add a preview button
+        const messageInput = document.querySelector('#id_message');
+        const previewContainer = document.querySelector('#preview-message');
+        
+        // Add preview button next to message textarea
+        if (messageInput && previewContainer) {
+            const previewBtn = document.createElement('button');
+            previewBtn.type = 'button';
+            previewBtn.className = 'btn btn-sm btn-outline-secondary mt-2';
+            previewBtn.innerHTML = '<i class="fas fa-eye me-1"></i> Preview Message';
+            previewBtn.setAttribute('data-bs-toggle', 'modal');
+            previewBtn.setAttribute('data-bs-target', '#previewModal');
+            
+            messageInput.parentNode.insertBefore(previewBtn, messageInput.nextSibling);
+            
+            // Update preview when button is clicked
+            previewBtn.addEventListener('click', function() {
+                previewContainer.textContent = messageInput.value || 'No message content';
+            });
+        }
+    });
+</script>
+{% endblock %}

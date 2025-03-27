@@ -1,0 +1,234 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}Broadcast Messages - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="fas fa-broadcast-tower me-2"></i>Broadcast Messages</h1>
+            <a href="{% url 'create_broadcast' %}" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-1"></i> New Broadcast
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Filter Broadcasts</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="id_status" class="form-label">Status</label>
+                        {{ filter_form.status }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_broadcast_type" class="form-label">Type</label>
+                        {{ filter_form.broadcast_type }}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="id_location" class="form-label">Location</label>
+                        {{ filter_form.location }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_from_date" class="form-label">From Date</label>
+                        {{ filter_form.from_date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_to_date" class="form-label">To Date</label>
+                        {{ filter_form.to_date }}
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'broadcast_list' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-times me-1"></i> Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Broadcast List</h5>
+            </div>
+            <div class="card-body">
+                {% if broadcasts %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Channels</th>
+                                <th>Status</th>
+                                <th>Scheduled</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for broadcast in broadcasts %}
+                            <tr>
+                                <td>{{ broadcast.title }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ broadcast.get_broadcast_type_display }}</span>
+                                </td>
+                                <td>
+                                    {% if broadcast.send_sms %}<span class="badge bg-primary me-1">SMS</span>{% endif %}
+                                    {% if broadcast.send_whatsapp %}<span class="badge bg-success">WhatsApp</span>{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if broadcast.status == 'DRAFT' %}bg-secondary
+                                        {% elif broadcast.status == 'SCHEDULED' %}bg-warning
+                                        {% elif broadcast.status == 'SENDING' %}bg-info
+                                        {% elif broadcast.status == 'COMPLETED' %}bg-success
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ broadcast.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if broadcast.scheduled_time %}
+                                        {{ broadcast.scheduled_time|date:"M d, Y H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">Immediate</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ broadcast.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#viewModal{{ broadcast.id }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if broadcast.status == 'DRAFT' or broadcast.status == 'SCHEDULED' %}
+                                    <a href="{% url 'cancel_broadcast' broadcast.id %}" class="btn btn-sm btn-outline-danger" data-confirm="Are you sure you want to cancel this broadcast?">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                            <!-- View Modal -->
+                            <div class="modal fade" id="viewModal{{ broadcast.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ broadcast.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="viewModalLabel{{ broadcast.id }}">
+                                                {{ broadcast.title }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6>Broadcast Details</h6>
+                                                    <table class="table table-borderless">
+                                                        <tr>
+                                                            <th>Type:</th>
+                                                            <td>{{ broadcast.get_broadcast_type_display }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Status:</th>
+                                                            <td>{{ broadcast.get_status_display }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Channels:</th>
+                                                            <td>
+                                                                {% if broadcast.send_sms %}SMS{% endif %}
+                                                                {% if broadcast.send_sms and broadcast.send_whatsapp %} & {% endif %}
+                                                                {% if broadcast.send_whatsapp %}WhatsApp{% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Created By:</th>
+                                                            <td>{{ broadcast.created_by.username }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Created:</th>
+                                                            <td>{{ broadcast.created_at|date:"M d, Y H:i" }}</td>
+                                                        </tr>
+                                                        {% if broadcast.scheduled_time %}
+                                                        <tr>
+                                                            <th>Scheduled:</th>
+                                                            <td>{{ broadcast.scheduled_time|date:"M d, Y H:i" }}</td>
+                                                        </tr>
+                                                        {% endif %}
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6>Target Locations</h6>
+                                                    {% if broadcast.locations.exists %}
+                                                    <ul class="list-group">
+                                                        {% for location in broadcast.locations.all %}
+                                                        <li class="list-group-item">{{ location }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                    {% else %}
+                                                    <p class="text-muted">All locations</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-4">
+                                                <h6>Message Content</h6>
+                                                <div class="p-3 bg-light rounded">
+                                                    {{ broadcast.message|linebreaks }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            
+                                            {% if broadcast.status == 'DRAFT' or broadcast.status == 'SCHEDULED' %}
+                                            <a href="{% url 'cancel_broadcast' broadcast.id %}" class="btn btn-danger">
+                                                <i class="fas fa-times me-1"></i> Cancel Broadcast
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-broadcast-tower text-muted fa-4x mb-3"></i>
+                    <h4 class="text-muted">No broadcasts found</h4>
+                    <p>You haven't created any broadcast messages yet.</p>
+                    <a href="{% url 'create_broadcast' %}" class="btn btn-primary mt-2">
+                        <i class="fas fa-paper-plane me-1"></i> Create Broadcast
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_status').classList.add('form-select');
+        document.getElementById('id_broadcast_type').classList.add('form-select');
+        document.getElementById('id_location').classList.add('form-select');
+        document.getElementById('id_from_date').classList.add('form-control');
+        document.getElementById('id_to_date').classList.add('form-control');
+    });
+</script>
+{% endblock %}

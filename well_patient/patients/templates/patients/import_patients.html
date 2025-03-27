@@ -1,0 +1,183 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}Import Patients - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="fas fa-file-import me-2"></i>Import Patients</h1>
+            <a href="{% url 'patient_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Patients
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Import Patient Data</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="import-form">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <p>Upload a CSV or Excel file containing patient data to import into the system.</p>
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="fas fa-info-circle me-1"></i> File Format Requirements</h6>
+                            <p class="mb-0">The file should contain the following columns:</p>
+                            <ul class="mb-0">
+                                <li><strong>Required:</strong> first_name, last_name, phone_number</li>
+                                <li><strong>Optional:</strong> email, gender (M/F/O), date_of_birth, location_name, city, state, country, notification_preference (SMS/WA/BOTH/NONE)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h5>Drag & Drop Files Here</h5>
+                        <p class="text-muted">or</p>
+                        <label for="id_file" class="btn btn-primary">
+                            <i class="fas fa-file me-1"></i> Browse Files
+                        </label>
+                        <input type="file" name="file" id="id_file" class="d-none" accept=".csv,.xls,.xlsx">
+                        <p class="mt-2 mb-0 file-label">No file selected</p>
+                        
+                        {% if form.file.errors %}
+                        <div class="alert alert-danger mt-3">
+                            {% for error in form.file.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.update_existing }}
+                        <label class="form-check-label" for="{{ form.update_existing.id_for_label }}">
+                            Update existing patients if phone number matches
+                        </label>
+                        {% if form.update_existing.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.update_existing.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i> Import Patients
+                        </button>
+                        <a href="{% url 'patient_list' %}" class="btn btn-outline-secondary ms-2">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Download Template</h5>
+            </div>
+            <div class="card-body">
+                <p>Not sure how to format your data? Download our template file to get started:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="/admin/patients/patient/export/?format=csv" class="btn btn-outline-success w-100">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV Template
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/admin/patients/patient/export/?format=xlsx" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-file-excel me-1"></i> Download Excel Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Bootstrap styling to form fields
+        const updateExisting = document.getElementById('id_update_existing');
+        if (updateExisting) {
+            updateExisting.classList.add('form-check-input');
+        }
+        
+        // File upload handling
+        const fileInput = document.getElementById('id_file');
+        const fileLabel = document.querySelector('.file-label');
+        const uploadArea = document.getElementById('upload-area');
+        
+        if (fileInput && fileLabel && uploadArea) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    fileLabel.textContent = fileInput.files[0].name;
+                    uploadArea.classList.add('border-primary');
+                } else {
+                    fileLabel.textContent = 'No file selected';
+                    uploadArea.classList.remove('border-primary');
+                }
+            });
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(function(eventName) {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(function(eventName) {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.classList.add('border-primary', 'bg-light');
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('border-primary', 'bg-light');
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                
+                // Trigger change event to update the file label
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        }
+    });
+</script>
+{% endblock %}

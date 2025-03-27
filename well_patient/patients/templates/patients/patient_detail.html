@@ -1,0 +1,310 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}{{ patient.get_full_name }} - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="fas fa-user me-2"></i>
+                {{ patient.get_full_name }}
+            </h1>
+            <div>
+                <a href="/admin/patients/patient/{{ patient.id }}/change/" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i> Edit
+                </a>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Patient Information -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th scope="row" width="35%">Full Name</th>
+                            <td>{{ patient.get_full_name }}</td>
+                        </tr>
+                        {% if patient.gender %}
+                        <tr>
+                            <th scope="row">Gender</th>
+                            <td>{{ patient.get_gender_display }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if patient.date_of_birth %}
+                        <tr>
+                            <th scope="row">Date of Birth</th>
+                            <td>{{ patient.date_of_birth|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th scope="row">Phone</th>
+                            <td>{{ patient.phone_number }}</td>
+                        </tr>
+                        {% if patient.email %}
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>{{ patient.email }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th scope="row">Status</th>
+                            <td>
+                                <span class="badge {% if patient.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if patient.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Notifications</th>
+                            <td>
+                                <span class="badge {% if patient.notification_preference == 'SMS' %}bg-primary{% elif patient.notification_preference == 'WA' %}bg-success{% elif patient.notification_preference == 'BOTH' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ patient.get_notification_preference_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Information -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Location</h5>
+            </div>
+            <div class="card-body">
+                {% if patient.location %}
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th scope="row" width="35%">Name</th>
+                            <td>{{ patient.location.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">City</th>
+                            <td>{{ patient.location.city }}</td>
+                        </tr>
+                        {% if patient.location.state %}
+                        <tr>
+                            <th scope="row">State</th>
+                            <td>{{ patient.location.state }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th scope="row">Country</th>
+                            <td>{{ patient.location.country }}</td>
+                        </tr>
+                        {% if patient.location.postal_code %}
+                        <tr>
+                            <th scope="row">Postal Code</th>
+                            <td>{{ patient.location.postal_code }}</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% if patient.address %}
+                <div class="mt-3">
+                    <h6>Address</h6>
+                    <p class="text-muted">{{ patient.address }}</p>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-map-marked-alt text-muted fa-3x mb-3"></i>
+                    <p>No location information available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Metadata</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th scope="row" width="35%">Created</th>
+                            <td>{{ patient.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Last Updated</th>
+                            <td>{{ patient.updated_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medications -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-pills me-2"></i>Medications</h5>
+                    <a href="/admin/patients/patientmedication/add/?patient={{ patient.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add Medication
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if medications %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Medication</th>
+                                <th>Dosage</th>
+                                <th>Start Date</th>
+                                <th>Next Refill</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medications %}
+                            <tr>
+                                <td>{{ med.medication.name }}</td>
+                                <td>{% if med.dosage %}{{ med.dosage }}{% else %}<span class="text-muted">Not specified</span>{% endif %}</td>
+                                <td>{{ med.start_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if med.is_refill_due_soon %}
+                                    <span class="badge bg-warning">
+                                        {{ med.next_refill_date|date:"M d, Y" }} (Soon)
+                                    </span>
+                                    {% else %}
+                                    {{ med.next_refill_date|date:"M d, Y" }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if med.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if med.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/patients/patientmedication/{{ med.id }}/change/" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-capsules text-muted fa-3x mb-3"></i>
+                    <p>No medications assigned to this patient.</p>
+                    <a href="/admin/patients/patientmedication/add/?patient={{ patient.id }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus me-1"></i> Add Medication
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Notifications -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Recent Notifications</h5>
+            </div>
+            <div class="card-body">
+                {% if notifications %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Channel</th>
+                                <th>Status</th>
+                                <th>Scheduled</th>
+                                <th>Sent</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for notification in notifications %}
+                            <tr>
+                                <td>{{ notification.notification_type.name }}</td>
+                                <td>
+                                    <span class="badge {% if notification.channel == 'SMS' %}bg-primary{% else %}bg-success{% endif %}">
+                                        {{ notification.get_channel_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if notification.status == 'SENT' %}bg-success{% elif notification.status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ notification.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ notification.scheduled_time|date:"M d, H:i" }}</td>
+                                <td>{% if notification.sent_time %}{{ notification.sent_time|date:"M d, H:i" }}{% else %}<span class="text-muted">Pending</span>{% endif %}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#messageModal{{ notification.id }}">
+                                        View
+                                    </button>
+                                    
+                                    <!-- Message Modal -->
+                                    <div class="modal fade" id="messageModal{{ notification.id }}" tabindex="-1" aria-labelledby="messageModalLabel{{ notification.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="messageModalLabel{{ notification.id }}">
+                                                        {{ notification.notification_type.name }} - {{ notification.get_channel_display }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>{{ notification.message }}</p>
+                                                    {% if notification.status == 'FAILED' and notification.status_message %}
+                                                    <div class="alert alert-danger mt-3">
+                                                        <strong>Error:</strong> {{ notification.status_message }}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-bell-slash text-muted fa-3x mb-3"></i>
+                    <p>No notifications have been sent to this patient.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

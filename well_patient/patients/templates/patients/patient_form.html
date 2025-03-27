@@ -1,0 +1,232 @@
+{% extends 'patients/base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}New{% endif %} Patient - Well PATIENT{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus{% endif %} me-2"></i>
+                {% if form.instance.pk %}Edit{% else %}New{% endif %} Patient
+            </h1>
+            {% if form.instance.pk %}
+            <a href="{% url 'patient_detail' form.instance.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Patient
+            </a>
+            {% else %}
+            <a href="{% url 'patient_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+            {% endif %}
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{% if form.instance.pk %}Edit{% else %}New{% endif %} Patient</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Personal Information -->
+                    <div class="col-12">
+                        <h5>Personal Information</h5>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name*</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.first_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name*</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.last_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.gender.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.date_of_birth.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="{{ form.notification_preference.id_for_label }}" class="form-label">Notification Preference*</label>
+                        {{ form.notification_preference }}
+                        {% if form.notification_preference.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.notification_preference.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="col-12 mt-4">
+                        <h5>Contact Information</h5>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number*</label>
+                        {{ form.phone_number }}
+                        <div class="form-text">Enter in international format (e.g., +254712345678)</div>
+                        {% if form.phone_number.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.phone_number.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.email.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.location.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.is_active.id_for_label }}" class="form-label">Status</label>
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+                        </div>
+                        {% if form.is_active.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.is_active.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.address.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Patient
+                        </button>
+                        {% if form.instance.pk %}
+                        <a href="{% url 'patient_detail' form.instance.pk %}" class="btn btn-outline-secondary ms-2">
+                            Cancel
+                        </a>
+                        {% else %}
+                        <a href="{% url 'patient_list' %}" class="btn btn-outline-secondary ms-2">
+                            Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add Bootstrap classes to form fields
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add form-control class to input fields
+        const formControls = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea');
+        formControls.forEach(function(input) {
+            input.classList.add('form-control');
+        });
+        
+        // Add form-select class to select fields
+        const selects = document.querySelectorAll('select');
+        selects.forEach(function(select) {
+            select.classList.add('form-select');
+        });
+        
+        // Add form-check-input class to checkboxes
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.classList.add('form-check-input');
+        });
+        
+        // Set date input type
+        const dateFields = document.querySelectorAll('input[name="date_of_birth"]');
+        dateFields.forEach(function(field) {
+            field.type = 'date';
+        });
+    });
+</script>
+{% endblock %}
