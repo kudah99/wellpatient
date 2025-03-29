@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils import timezone
-from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from django.contrib.auth.models import User, Group
@@ -13,6 +12,9 @@ from .models import (
 )
 from .resources import PatientResource
 from .forms import BroadcastMessageForm
+
+from import_export.admin import ImportExportModelAdmin
+from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
 
 
 # Unregister default User and Group admin
@@ -25,8 +27,8 @@ class UnfoldUserAdmin(ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff')
-    search_fields = ('username', 'first_name', 'last_name', 'email')
+    list_display = ('username', 'first_name', 'last_name', 'is_staff')
+    search_fields = ('first_name', 'last_name',)
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     ordering = ('username',)
 
@@ -41,9 +43,9 @@ class UnfoldGroupAdmin(ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(ModelAdmin):
-    list_display = ('name', 'city', 'state', 'country', 'postal_code', 'patient_count')
-    list_filter = ('city', 'state', 'country')
-    search_fields = ('name', 'city', 'state', 'country', 'postal_code')
+    list_display = ('name', 'city',)
+    list_filter = ('city', 'name')
+    search_fields = ('name', 'city')
     
     def patient_count(self, obj):
         count = obj.patients.count()
@@ -72,15 +74,17 @@ class PatientMedicationInline(admin.TabularInline):
 
 
 @admin.register(Patient)
-class PatientAdmin(ImportExportModelAdmin, ModelAdmin):
+class PatientAdmin(ModelAdmin, ImportExportModelAdmin):
+    import_form_class = ImportForm
+    export_form_class = ExportForm
     resource_class = PatientResource
     list_display = ('get_full_name', 'phone_number', 'location', 'notification_preference', 'is_active')
-    list_filter = ('location__city', 'location__state', 'gender', 'notification_preference', 'is_active')
-    search_fields = ('first_name', 'last_name', 'phone_number', 'email')
+    list_filter = ('location__city', 'location__name',  'notification_preference', 'is_active')
+    search_fields = ('first_name', 'last_name', 'phone_number')
     inlines = [PatientMedicationInline]
     fieldsets = (
         ('Personal Information', {
-            'fields': ('first_name', 'last_name', 'date_of_birth', 'gender', 'email')
+            'fields': ('first_name', 'last_name', )
         }),
         ('Contact Information', {
             'fields': ('phone_number', 'address', 'location')

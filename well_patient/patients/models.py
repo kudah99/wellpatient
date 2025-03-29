@@ -8,9 +8,6 @@ class Location(models.Model):
     """Model to store location details for patients"""
     name = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, default="Kenya")
-    postal_code = models.CharField(max_length=20, blank=True)
     
     class Meta:
         ordering = ['city', 'name']
@@ -52,15 +49,12 @@ class Patient(models.Model):
     
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
     
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
     )
     phone_number = models.CharField(validators=[phone_regex], max_length=17)
-    email = models.EmailField(blank=True)
     
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name='patients')
     address = models.TextField(blank=True)

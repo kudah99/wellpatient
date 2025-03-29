@@ -56,6 +56,40 @@ def dashboard(request):
     return render(request, 'patients/dashboard.html', context)
 
 
+def dashboard_callback(request, context):
+    """Main dashboard view showing stats and recent notifications"""
+    # Get counts for dashboard
+    patient_count = Patient.objects.filter(is_active=True).count()
+    locations_count = Location.objects.count()
+    medications_count = Medication.objects.count()
+    
+    # Recent notifications
+    recent_notifications = NotificationLog.objects.order_by('-sent_time')[:10]
+    
+    # Upcoming refills in the next week
+    today = timezone.now().date()
+    next_week = today + timezone.timedelta(days=7)
+    upcoming_refills = PatientMedication.objects.filter(
+        next_refill_date__range=[today, next_week],
+        is_active=True
+    ).select_related('patient', 'medication')
+    
+    # Pending broadcasts
+    pending_broadcasts = BroadcastMessage.objects.filter(
+        status__in=['SCHEDULED', 'SENDING']
+    ).order_by('scheduled_time')[:5]
+    
+    context.update({
+        'site_title': "Well PATIENT Administration",
+        'patient_count': patient_count,
+        'locations_count': locations_count,
+        'medications_count': medications_count,
+        'recent_notifications': recent_notifications,
+        'upcoming_refills': upcoming_refills,
+        'pending_broadcasts': pending_broadcasts,
+    })
+    return context
+
 @method_decorator(login_required, name='dispatch')
 class PatientListView(ListView):
     """View for listing all patients with filtering options"""

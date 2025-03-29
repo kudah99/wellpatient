@@ -5,6 +5,10 @@ Django settings for well_patient project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
+from django.templatetags.static import static
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,6 +32,10 @@ INSTALLED_APPS = [
     'unfold',  # django-unfold for admin UI
     'unfold.contrib.filters',  # Optional for better filter UI
     'unfold.contrib.forms',  # Optional for better form UI
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    "unfold.contrib.simple_history",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -36,13 +44,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'import_export',
-    'patients.apps.PatientsConfig',
+    'patients'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -54,7 +63,7 @@ ROOT_URLCONF = 'well_patient.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -107,9 +116,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
+STORAGES = {
+    # ...
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+WHITENOISE_MANIFEST_STRICT = True
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join("static")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_DIRS = (
+    ("css", BASE_DIR / "assets/css"),
+    ("js", BASE_DIR / "assets/js")
+)
+
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -136,38 +158,83 @@ UNFOLD = {
     "SITE_TITLE": "Well PATIENT",
     "SITE_HEADER": "Well PATIENT",
     "SITE_SYMBOL": "local_pharmacy",  # From Material symbols
-    "SIDEBAR": {
-        "show_search": True,
-        "show_all_applications": True,
+    "SHOW_HISTORY": False,
+    "SHOW_VIEW_ON_SITE": True,
+    "THEME": "light",
+    "STYLES": [
+        lambda request: static("css/custom.css"),
+    ],
+    "SCRIPTS": [
+        lambda request: static("js/custom.js"),
+    ],
+        "SIDEBAR": {
+        "show_search": False,  # Search in applications and models names
+        "show_all_applications": False,  # Dropdown with all applications and models
         "navigation": [
             {
-                "title": "Patients",
-                "icon": "people",
-                "models": [
-                    "patients.patient",
+                "title": _(""),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Dashboard"),
+                        "icon": "Dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                    
                 ],
             },
-            {
-                "title": "Medications",
-                "icon": "medication",
-                "models": [
-                    "patients.medication",
-                ],
-            },
-            {
-                "title": "Notifications",
-                "icon": "notifications",
-                "models": [
-                    "patients.notificationlog",
-                ],
-            },
-            {
-                "title": "Locations",
-                "icon": "location_on",
-                "models": [
-                    "patients.location",
-                ],
-            },
-        ],
-    },
+             {
+                "title": _("General"),
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Locations Management"),
+                        "icon": "person_pin_circle",
+                        "link": reverse_lazy("admin:patients_location_changelist"),
+                    },
+                     {
+                        "title": _("BroadCast Messages Management"),
+                        "icon": "cell_tower ",
+                        "link": reverse_lazy("admin:patients_broadcastmessage_changelist"),
+                    },
+                ]
+                        },
+                        {
+                "title": _("Client Management"),
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Patients"),
+                        "icon": "people",
+                        "link": reverse_lazy("admin:patients_patient_changelist"),
+                    },
+                     {
+                        "title": _("patient Medication"),
+                        "icon": "medical_information ",
+                        "link": reverse_lazy("admin:patients_patientmedication_changelist"),
+                    },
+                ]
+                        },
+                        {
+                "title": _("Notifications Management"),
+                "separator": True,
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Notifications Logs"),
+                        "icon": "list",
+                        "link": reverse_lazy("admin:patients_notificationlog_changelist"),
+                    },
+                     {
+                        "title": _("Notifications Templates"),
+                        "icon": "Notifications",
+                        "link": reverse_lazy("admin:patients_notificationtype_changelist"),
+                    },
+                ]
+                        }
+        ]
+        }
+
 }

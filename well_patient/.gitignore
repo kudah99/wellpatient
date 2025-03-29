@@ -1,0 +1,27 @@
+# Python bytecode
+__pycache__
+*.egg-info
+
+# Django dynamic directories
+logs
+
+# Database files
+*.sqlite3
+*.rdb
+
+# Environment variables
+.env
+.env.docker
+
+# IDE config
+.vscode
+
+# Virtual enviroment
+.venv
+
+# static files
+static
+media
+
+#node modules
+node_modules
