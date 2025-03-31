@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'widget_tweaks',
     'import_export',
     'patients'
 ]
@@ -123,7 +124,7 @@ STORAGES = {
     },
 }
 
-WHITENOISE_MANIFEST_STRICT = True
+WHITENOISE_MANIFEST_STRICT = False
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join("static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -160,6 +161,7 @@ UNFOLD = {
     "SITE_SYMBOL": "local_pharmacy",  # From Material symbols
     "SHOW_HISTORY": False,
     "SHOW_VIEW_ON_SITE": True,
+    "DASHBOARD_CALLBACK": "patients.views.dashboard_callback",
     "THEME": "light",
     "STYLES": [
         lambda request: static("css/custom.css"),
@@ -196,7 +198,7 @@ UNFOLD = {
                      {
                         "title": _("BroadCast Messages Management"),
                         "icon": "cell_tower ",
-                        "link": reverse_lazy("admin:patients_broadcastmessage_changelist"),
+                        "link": reverse_lazy("admin:broadcast_messages")
                     },
                 ]
                         },

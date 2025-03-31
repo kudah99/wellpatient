@@ -5,16 +5,20 @@ from django.utils import timezone
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 from django.contrib.auth.models import User, Group
-
+from django.urls import path
+from unfold.admin import ModelAdmin
+from django.shortcuts import redirect
+from patients.forms import BroadcastMessageForm
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.http import HttpRequest
+from unfold.decorators import action
+from patients.views import BroadcastListView,BroadcastMessageView,ImportPatientsView
 from .models import (
     Patient, Location, Medication, PatientMedication,
-    NotificationLog, NotificationType, BroadcastMessage
+    NotificationLog, NotificationType,BroadcastMessage
 )
 from .resources import PatientResource
-from .forms import BroadcastMessageForm
-
-from import_export.admin import ImportExportModelAdmin
-from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
 
 
 # Unregister default User and Group admin
@@ -74,9 +78,9 @@ class PatientMedicationInline(admin.TabularInline):
 
 
 @admin.register(Patient)
-class PatientAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+class PatientAdmin(ModelAdmin):
+
+    actions_list = ["changelist_action"]
     resource_class = PatientResource
     list_display = ('get_full_name', 'phone_number', 'location', 'notification_preference', 'is_active')
     list_filter = ('location__city', 'location__name',  'notification_preference', 'is_active')
@@ -93,7 +97,25 @@ class PatientAdmin(ModelAdmin, ImportExportModelAdmin):
             'fields': ('notification_preference', 'is_active')
         }),
     )
+    def get_urls(self):
+        # IMPORTANT: model_admin is required
+        custom_patients_import = self.admin_site.admin_view(
+            ImportPatientsView.as_view(model_admin=self)
+        )
+        return super().get_urls() + [
+            path(
+                "custom-patients-import", custom_patients_import, name="custom_patients_import"
+            ),
+        ]
 
+    @action(description=_("Bulk import"), url_path="changelist-action", permissions=["changelist_action"])
+    def changelist_action(self, request: HttpRequest):
+        return redirect(
+          reverse_lazy("admin:custom_patients_import")
+        )
+    def has_changelist_action_permission(self, request: HttpRequest):
+        # Write your own bussiness logic. Code below will always display an action.
+        return True
 
 @admin.register(PatientMedication)
 class PatientMedicationAdmin(ModelAdmin):
@@ -148,6 +170,23 @@ class BroadcastMessageAdmin(ModelAdmin):
             broadcast.status = 'SCHEDULED'
             broadcast.save()
         self.message_user(request, f"Scheduled {queryset.filter(status='DRAFT').count()} broadcasts.")
+
+    def get_urls(self):
+        # IMPORTANT: model_admin is required
+        broadcast_messages_list = self.admin_site.admin_view(
+            BroadcastListView.as_view(model_admin=self)
+        )
+        broadcast_messages_create = self.admin_site.admin_view(
+           BroadcastMessageView.as_view(model_admin=self)
+        )
+        return super().get_urls() + [
+            path(
+                "broadcast-messages", broadcast_messages_list, name="broadcast_messages"
+            ),
+            path(
+                "broadcast-message_crete", broadcast_messages_create, name="broadcast_message_create"
+            ),
+        ]
     
     schedule_broadcast.short_description = "Schedule selected broadcasts"
     

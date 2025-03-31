@@ -169,7 +169,7 @@
               </a>
 
               <a
-                href="{% url 'create_broadcast' %}"
+                href="{% url 'admin:broadcast_message_create' %}"
                 class="flex items-center font-medium px-6 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md hover:shadow-lg transition-all duration-300 btn-primary"
               >
                 <span class="material-symbols-outlined mr-2">send</span>
@@ -192,7 +192,7 @@
                     {{ patient_count }}
                   </h2>
                   <a
-                    href="{% url 'patient_list' %}"
+                    href="{% url 'admin:patients_patient_changelist' %}"
                     class="inline-flex items-center mt-4 text-primary-600 hover:text-primary-800 transition-colors text-sm font-medium"
                   >
                     View all patients
@@ -525,7 +525,7 @@
                 Pending Broadcasts
               </h2>
               <a
-                href="{% url 'broadcast_list' %}"
+                href="{% url 'admin:broadcast_messages' %}"
                 class="text-sm font-medium text-primary-600 hover:text-primary-800 flex items-center"
               >
                 View all
@@ -642,7 +642,7 @@
                       >
                         {% if broadcast.status == 'SCHEDULED' %}
                         <a
-                          href="{% url 'cancel_broadcast' broadcast.id %}"
+                          href=""
                           class="text-red-600 hover:text-red-900 flex items-center"
                         >
                           <span

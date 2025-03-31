@@ -1,7 +1,50 @@
-{% extends "unfold/layouts/base.html" %}
+{% extends 'base.html' %} {% load i18n static unfold %} 
+{% block extra_head %}
+<!-- Google Material Symbols and Font Awesome -->
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+{% endblock %}
 
-{% load admin_urls i18n unfold widget_tweaks %}
-{% block content %}
+{% block title %}
+    {% if subtitle %}
+        {{ subtitle }} |
+    {% endif %}
+
+    {{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+{% block base %}
+<div id="page" class="flex min-h-screen">
+  {% if not is_popup and is_nav_sidebar_enabled %} {% block nav-sidebar %} 
+  {%  include "admin/nav_sidebar.html" %} {% endblock %} {% endif %}
+
+  <div id="main" class="flex-grow min-w-0" x-resize="mainWidth = $width">
+    {% block content_before %}
+     {% include "unfold/helpers/header.html" %}
+     {%endblock %} {% if not is_popup %}
+      {% spaceless %} 
+      {% block breadcrumbs %}{%endblock %} 
+      {% endspaceless %} {% endif %}
+
+    <div class="px-4 lg:px-8">
+      <div
+        id="content"
+        class="container mx-auto {% block coltype %}colM{% endblock %}"
+      >
+        {% block content %} {% block object-tools %}{% endblock %}
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
@@ -49,7 +92,7 @@
                                     <p class="text-sm text-blue-700 mt-1">The file should contain the following columns:</p>
                                     <ul class="list-disc pl-5 text-sm text-blue-700 mt-1">
                                         <li><strong>Required:</strong> first_name, last_name, phone_number</li>
-                                        <li><strong>Optional:</strong> email, gender (M/F/O), date_of_birth, location_name, city, state, country, notification_preference (SMS/WA/BOTH/NONE)</li>
+                                        <li><strong>Optional:</strong>location_name, city,  notification_preference (SMS/WA/BOTH/NONE)</li>
                                     </ul>
                                 </div>
                             </div>
@@ -110,22 +153,6 @@
             </div>
         </div>
         
-        <div class="bg-white shadow overflow-hidden rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Download Template</h3>
-            </div>
-            <div class="px-6 py-4">
-                <p class="text-gray-600 mb-4">Not sure how to format your data? Download our template file to get started:</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="/admin/patients/patient/export/?format=csv" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        <i class="fas fa-file-csv mr-2"></i> Download CSV Template
-                    </a>
-                    <a href="/admin/patients/patient/export/?format=xlsx" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-file-excel mr-2"></i> Download Excel Template
-                    </a>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
@@ -195,4 +222,5 @@
         }
     });
 </script>
+{% endblock %}
 {% endblock %}
