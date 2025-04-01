@@ -1,31 +1,36 @@
 import os
 import csv
 import pandas as pd
+import requests
 import logging
 from io import TextIOWrapper
 from django.utils import timezone
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from django.conf import settings
-
+from well_patient.settings import WHATSAPP_API_KEY,TWILIO_PHONE_NUMBER,WHATSAPP_PHONE_NUMBER_ID,TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN
+from heyoo import WhatsApp
 logger = logging.getLogger(__name__)
+
+messenger = WhatsApp(WHATSAPP_API_KEY,  phone_number_id=WHATSAPP_PHONE_NUMBER_ID)
+client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 def send_sms(to_phone_number, message):
     """
     Send SMS using Twilio's API
     Returns: (success, message)
     """
-    if not settings.TWILIO_ACCOUNT_SID or not settings.TWILIO_AUTH_TOKEN:
+    if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN:
         logger.error("Twilio credentials not configured")
         return False, "Twilio credentials not configured"
     
     try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        
         
         # Sending the SMS message
         twilio_message = client.messages.create(
             body=message,
-            from_=settings.TWILIO_PHONE_NUMBER,
+            from_=TWILIO_PHONE_NUMBER,
             to=to_phone_number
         )
         
@@ -42,43 +47,112 @@ def send_sms(to_phone_number, message):
         return False, error_message
 
 
-def send_whatsapp(to_phone_number, message):
-    """
-    Send WhatsApp message using Twilio's WhatsApp API
-    Returns: (success, message)
-    """
-    if not settings.TWILIO_ACCOUNT_SID or not settings.TWILIO_AUTH_TOKEN:
-        logger.error("Twilio credentials not configured")
-        return False, "Twilio credentials not configured"
-    
-    try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        
-        # Format phone number for WhatsApp (WhatsApp requires "whatsapp:" prefix)
-        if not to_phone_number.startswith('whatsapp:'):
-            whatsapp_number = f"whatsapp:{to_phone_number}"
-        else:
-            whatsapp_number = to_phone_number
-        
-        # Sending WhatsApp message via Twilio
-        whatsapp_message = client.messages.create(
-            body=message,
-            from_=f"whatsapp:{settings.TWILIO_PHONE_NUMBER.replace('+', '')}",
-            to=whatsapp_number
-        )
-        
-        logger.info(f"WhatsApp message sent with SID: {whatsapp_message.sid}")
-        return True, f"Message sent with SID: {whatsapp_message.sid}"
-    
-    except TwilioRestException as e:
-        error_message = f"Twilio error: {e.code} - {e.msg}"
-        logger.error(error_message)
-        return False, error_message
-    except Exception as e:
-        error_message = f"Error sending WhatsApp message: {str(e)}"
-        logger.error(error_message)
-        return False, error_message
+from whatsapp import WhatsApp
+import logging
 
+logger = logging.getLogger(__name__)
+
+def format_phone_number(phone_number):
+    """
+    Format phone number to ensure it has the correct Zimbabwe country code (263).
+    Args:
+        phone_number (str): The phone number to format
+    Returns:
+        str: Formatted phone number with country code (without +)
+    Raises:
+        ValueError: If phone number is invalid
+    """
+    if not phone_number:
+        raise ValueError("Phone number cannot be empty")
+    
+    # Remove all non-digit characters
+    cleaned_number = ''.join(c for c in phone_number if c.isdigit())
+    
+    if not cleaned_number:
+        raise ValueError("Invalid phone number format")
+    
+    # Check if number already has country code
+    if cleaned_number.startswith("263"):
+        if len(cleaned_number) == 12:  # 263 + 9 digits
+            return cleaned_number
+        raise ValueError("Invalid Zimbabwean phone number length")
+    
+    # Handle local numbers starting with 0
+    if cleaned_number.startswith("0"):
+        if len(cleaned_number) == 10:  # 0 + 9 digits
+            return "263" + cleaned_number[1:]
+        raise ValueError("Invalid local phone number length")
+    
+    # Handle numbers missing both 0 and country code
+    if len(cleaned_number) == 9:  # Just the 9 digits
+        return "263" + cleaned_number
+    
+    raise ValueError("Unrecognized phone number format")
+
+def get_whatsapp_headers():
+    """
+    Build and return headers for WhatsApp API requests.
+    Returns:
+        dict: Headers for API requests
+    """
+    return {
+        "Authorization": f"Bearer {WHATSAPP_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+def send_whatsapp(recipient_id, message_text):
+    """
+    Send a text message to the specified recipient using the WhatsApp API.
+    Args:
+        recipient_id (str): The recipient's phone number
+        message_text (str): The message content to send
+    Returns:
+        dict: API response or error information
+    """
+    try:
+        # Format the recipient's phone number
+        formatted_number = format_phone_number(recipient_id)
+        
+        url = f"https://graph.facebook.com/v17.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
+        headers = get_whatsapp_headers()
+        
+        data = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": formatted_number,
+            "type": "text",
+            "text": {
+                "preview_url": False,  # Disable link previews by default
+                "body": message_text
+            }
+        }
+        
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        response.raise_for_status()  # Will raise HTTPError for 4XX/5XX responses
+        
+        logger.info(f"Successfully sent message to {recipient_id}")
+        print(f"Successfully sent message to {recipient_id}")
+        return response.json()
+        
+    except requests.exceptions.Timeout:
+        error_msg = f"Timeout error sending message to {recipient_id}"
+        logger.error(error_msg)
+        print(error_msg)
+        return {"error": error_msg}
+    except requests.exceptions.RequestException as e:
+        error_msg = f"API request failed for {recipient_id}: {str(e)}"
+        print(error_msg)
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except ValueError as e:
+        error_msg = f"Invalid phone number {recipient_id}: {str(e)}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        error_msg = f"Unexpected error sending to {recipient_id}: {str(e)}"
+        logger.exception(error_msg)
+        print(error_msg)
+        return {"error": error_msg}
 
 def process_import_file(file, update_existing=True):
     """
@@ -108,11 +182,6 @@ def process_import_file(file, update_existing=True):
                 last_name = str(row.get('last_name', '')).strip()
                 phone_number = str(row.get('phone_number', '')).strip()
                 
-                # Optional fields with defaults
-                email = str(row.get('email', '')).strip()
-                gender = str(row.get('gender', '')).strip().upper()[:1]  # Get first letter
-                if gender not in ['M', 'F', 'O']:
-                    gender = ''
                 
                 # Validate required fields
                 if not first_name or not last_name or not phone_number:
@@ -121,14 +190,11 @@ def process_import_file(file, update_existing=True):
                 # Get or create location
                 location_name = str(row.get('location_name', '')).strip()
                 city = str(row.get('city', '')).strip()
-                state = str(row.get('state', '')).strip()
-                country = str(row.get('country', 'Kenya')).strip()
                 
                 if location_name and city:
                     location, _ = Location.objects.get_or_create(
                         name=location_name,
-                        city=city,
-                        defaults={'state': state, 'country': country}
+                        city=city
                     )
                 else:
                     location = None
@@ -138,11 +204,6 @@ def process_import_file(file, update_existing=True):
                 if notification_pref not in ['SMS', 'WA', 'BOTH', 'NONE']:
                     notification_pref = 'BOTH'
                 
-                # Parse date of birth if provided
-                dob = row.get('date_of_birth', None)
-                if pd.isna(dob):
-                    dob = None
-                
                 # Try to find existing patient by phone number
                 patient = Patient.objects.filter(phone_number=phone_number).first()
                 
@@ -150,10 +211,6 @@ def process_import_file(file, update_existing=True):
                     # Update existing patient
                     patient.first_name = first_name
                     patient.last_name = last_name
-                    patient.email = email
-                    patient.gender = gender if gender else patient.gender
-                    if dob:
-                        patient.date_of_birth = dob
                     if location:
                         patient.location = location
                     patient.notification_preference = notification_pref
@@ -165,9 +222,6 @@ def process_import_file(file, update_existing=True):
                         first_name=first_name,
                         last_name=last_name,
                         phone_number=phone_number,
-                        email=email,
-                        gender=gender,
-                        date_of_birth=dob,
                         location=location,
                         notification_preference=notification_pref
                     )

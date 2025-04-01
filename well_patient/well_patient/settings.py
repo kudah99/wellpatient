@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-9dm=0pgo6y1f&^kkw66xn(e_4j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'widget_tweaks',
+    'django_celery_beat',
+    'django_celery_results',
     'import_export',
     'patients'
 ]
@@ -111,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Harare'
 USE_I18N = True
 USE_TZ = True
 
@@ -144,6 +146,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Twilio settings
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
@@ -235,8 +238,20 @@ UNFOLD = {
                         "link": reverse_lazy("admin:patients_notificationtype_changelist"),
                     },
                 ]
-                        }
-        ]
+                        },
+                        {
+                "title": _("Advanced Settings"),
+                "collapsible": False,
+                "items": [
+                    {
+                        "title": _("Periodic tasks"),
+                        "icon": "task",
+                        "link": reverse_lazy(
+                            "admin:django_celery_beat_periodictask_changelist"
+                        ),
+                    },
+                ],
+            },]       
         }
 
 }

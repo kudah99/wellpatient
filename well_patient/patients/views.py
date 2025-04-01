@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import logging
 from django.utils import timezone
 from django.db.models import  Q
 from django.utils.decorators import method_decorator
@@ -13,14 +16,16 @@ from .models import (
     Patient, Location, Medication, PatientMedication,
     NotificationLog, BroadcastMessage
 )
+import json
 from .forms import (
     PatientFilterForm, SendBroadcastForm, BroadcastFilterForm,
     ImportPatientForm
 )
-from .utils import process_import_file
+from .utils import process_import_file,send_whatsapp
 from .tasks import send_broadcast_message
 
-
+# Initialize logging
+logger = logging.getLogger(__name__)
 
 def dashboard_callback(request, context):
     """Main dashboard view showing stats and recent notifications"""
@@ -233,3 +238,67 @@ def cancel_broadcast(request, pk):
         messages.error(request, "Cannot cancel a broadcast that has already been sent or completed.")
     
     return redirect('broadcast_messages')
+
+
+@csrf_exempt
+def whatsapp_webhook(request):
+    if request.method == "GET":
+        # Handle WhatsApp Webhook Verification
+        VERIFY_TOKEN = "@vd7uHW1M"
+        mode = request.GET.get("hub.mode")
+        token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+
+        if mode == "subscribe" and token == VERIFY_TOKEN:
+            logger.info("Webhook verification successful.")
+            return HttpResponse(challenge, status=200)
+        else:
+            logger.error("Webhook verification failed. Invalid token.")
+            return HttpResponse("Forbidden", status=403)
+    
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            logger.info(f"Incoming webhook data: {data}")
+            
+            # Extract message details
+            entry = data.get('entry', [{}])[0]
+            changes = entry.get('changes', [{}])[0]
+            value = changes.get('value', {})
+            message = value.get('messages', [{}])[0]
+            
+            if not message:
+                return HttpResponse("OK", status=200)
+                
+            # Extract phone number and message text
+            phone_number = message.get('from', '')
+            message_body = message.get('text', {}).get('body', '').strip().upper()
+            
+            if not phone_number:
+                return HttpResponse("OK", status=200)
+            
+            # Prepare response
+            if message_body == "CANCEL":
+                response_text = "You have successfully unsubscribed from Well PATIENT notifications. You will no longer receive medication refill reminders from us."
+                # Here you would typically update your database to mark this user as unsubscribed
+                logger.info(f"User {phone_number} unsubscribed")
+            else:
+                response_text = """Welcome to Well PATIENT! 
+A platform that sends medical refill reminders to help you stay on track with your medications.
+
+Reply CANCEL to no longer receive these and other notification texts from us."""
+            
+            # Construct response payload
+            send_whatsapp(phone_number, response_text)
+            
+            # Send response (you'll need to implement this part)
+            # send_whatsapp_message(response_payload)
+            logger.info(f"Prepared response for {phone_number}: {response_text}")
+            
+            return HttpResponse("OK", status=200)
+            
+        except Exception as e:
+            logger.error(f"Error processing webhook: {str(e)}")
+            return HttpResponse("OK", status=200)
+    
+    return HttpResponse("Method Not Allowed", status=405)

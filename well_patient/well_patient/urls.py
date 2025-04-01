@@ -10,8 +10,10 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
+
+    path('wellpatient/', include("patients.urls")),
      path("", RedirectView.as_view(url="/admin/", permanent=False)),
-    path('admin/', admin.site.urls)
+    path('admin/', admin.site.urls),
 ]
 
 # Serve static and media files during development

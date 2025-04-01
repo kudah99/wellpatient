@@ -7,4 +7,4 @@ class PatientsConfig(AppConfig):
     verbose_name = 'Patient Management'
 
     def ready(self):
-        import patients.signals  # noqa
+        import patients.signals

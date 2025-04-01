@@ -126,7 +126,7 @@ def send_broadcast_message(broadcast_id):
     Task to send a broadcast message to multiple patients based on location.
     """
     try:
-        broadcast = BroadcastMessage.objects.get(id=broadcast_id)
+        broadcast = BroadcastMessage.objects.get(pk=broadcast_id)
         
         # Update status to sending
         broadcast.status = 'SENDING'
@@ -215,8 +215,11 @@ def process_scheduled_broadcasts():
         status='SCHEDULED',
         scheduled_time__lte=now
     )
-    
+    print("****************************************************************")
+    print(broadcasts)
     for broadcast in broadcasts:
-        send_broadcast_message.delay(broadcast.id)
+        print("################################")
+        send_broadcast_message.delay(broadcast.pk)
+        print("******888888888888888888888888888888")
     
     return f"Processed {broadcasts.count()} scheduled broadcasts"

@@ -34,8 +34,17 @@ def handle_broadcast_creation(sender, instance, created, **kwargs):
     Signal handler for broadcast message creation/updates.
     Queues immediate broadcast messages for sending.
     """
-    # If a new broadcast has been created with a SENDING status, immediately queue it for sending
-    if (created or instance.tracker.has_changed('status')) and instance.status == 'SENDING':
+    # Get the original status before save if this is an update
+    original_status = None
+    if not created:
+        try:
+            original_status = BroadcastMessage.objects.get(pk=instance.pk).status
+        except BroadcastMessage.DoesNotExist:
+            original_status = None
+    
+    # If a new broadcast has been created with a SENDING status, 
+    # or status was changed to SENDING, queue it for sending
+    if (created or (original_status is not None and original_status != instance.status)) and instance.status == 'SENDING':
         logger.info(f"Queuing immediate broadcast: {instance.title}")
         send_broadcast_message.delay(instance.id)
 
