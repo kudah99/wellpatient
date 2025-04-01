@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from datetime import timedelta
-
+from django.utils.timezone import now
 from .models import PatientMedication, NotificationLog, BroadcastMessage
 from .tasks import send_broadcast_message
 
@@ -21,11 +21,12 @@ def handle_patient_medication_update(sender, instance, created, **kwargs):
         # If medication was previously inactive and now active, recalculate next refill date
         if instance.is_active and instance.tracker.has_changed('is_active') and not instance.tracker.previous('is_active'):
             # Calculate new refill date based on current date
-            instance.next_refill_date = timezone.now().date() + timedelta(days=instance.medication.refill_period_days)
+            instance.next_refill_date = now().date() + timedelta(days=instance.medication.refill_period_days)
             # Save again but don't trigger this signal recursively
             PatientMedication.objects.filter(pk=instance.pk).update(next_refill_date=instance.next_refill_date)
             logger.info(f"Reactivated medication {instance.medication} for patient {instance.patient}, "
                         f"next refill set to {instance.next_refill_date}")
+
 
 
 @receiver(post_save, sender=BroadcastMessage)
