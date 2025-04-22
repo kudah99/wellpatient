@@ -51,7 +51,7 @@ def dashboard_callback(request, context):
     ).order_by('scheduled_time')[:5]
     
     context.update({
-        'title': "Well PATIENT Administration",
+        'title': "WELL PATIENT Administration",
         'patient_count': patient_count,
         'locations_count': locations_count,
         'medications_count': medications_count,

@@ -55,9 +55,13 @@
         <div class="flex flex-grow items-center justify-center mx-auto px-4 relative">
             <div class="w-full sm:w-96 animate-fade-in">
                 <div class="card-effect p-8">
+                    <div class="text-center mb-6">
+                        <img src="{% static 'images/logo.png' %}" alt="Well PATIENT Logo" class="mx-auto  w-auto" style="height: 150px;"/>
+                    </div>
                     <h1 class="font-semibold mb-10 text-center">
-                        Well PATIENT Admin Login
+                        WELL PATIENT Admin Login
                     </h1>
+                    
 
                     {% include "unfold/helpers/messages/errornote.html" with errors=form.errors %}
 

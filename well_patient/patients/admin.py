@@ -16,7 +16,8 @@ from unfold.decorators import action
 from patients.views import BroadcastListView,BroadcastMessageView,ImportPatientsView
 from .models import (
     Patient, Location, Medication, PatientMedication,
-    NotificationLog, NotificationType,BroadcastMessage
+    NotificationLog, NotificationType,BroadcastMessage,
+    CorporateClient
 )
 from .resources import PatientResource
 
@@ -58,16 +59,17 @@ class UnfoldGroupAdmin(ModelAdmin):
     filter_horizontal = ('permissions',)
 
 
+
 @admin.register(Location)
 class LocationAdmin(ModelAdmin):
-    list_display = ('name', 'city',)
+    list_display = ('name', 'city', 'patient_count')
     list_filter = ('city', 'name')
     search_fields = ('name', 'city')
-    
+
     def patient_count(self, obj):
         count = obj.patients.count()
         return format_html('<span class="badge bg-info">{}</span>', count)
-    
+
     patient_count.short_description = 'Patients'
 
 
@@ -76,11 +78,11 @@ class MedicationAdmin(ModelAdmin):
     list_display = ('name', 'refill_period_days', 'patient_count')
     search_fields = ('name',)
     list_filter = ('refill_period_days',)
-    
+
     def patient_count(self, obj):
         count = PatientMedication.objects.filter(medication=obj).count()
         return format_html('<span class="badge bg-info">{}</span>', count)
-    
+
     patient_count.short_description = 'Patients'
 
 
@@ -92,16 +94,22 @@ class PatientMedicationInline(admin.TabularInline):
 
 @admin.register(Patient)
 class PatientAdmin(ModelAdmin):
-
     actions_list = ["changelist_action"]
     resource_class = PatientResource
-    list_display = ('get_full_name', 'phone_number', 'location', 'notification_preference', 'is_active')
-    list_filter = ('location__city', 'location__name',  'notification_preference', 'is_active')
+    list_display = (
+        'get_full_name', 'phone_number', 'location',
+        'notification_preference', 'is_active'
+    )
+    list_filter = (
+        'location__city','payment_method',
+        'notification_preference', 'is_active'
+    )
     search_fields = ('first_name', 'last_name', 'phone_number')
     inlines = [PatientMedicationInline]
+
     fieldsets = (
         ('Personal Information', {
-            'fields': ('first_name', 'last_name', )
+            'fields': ('first_name', 'last_name')
         }),
         ('Contact Information', {
             'fields': ('phone_number', 'address', 'location')
@@ -110,41 +118,46 @@ class PatientAdmin(ModelAdmin):
             'fields': ('notification_preference', 'is_active')
         }),
     )
+
     def get_urls(self):
-        # IMPORTANT: model_admin is required
         custom_patients_import = self.admin_site.admin_view(
             ImportPatientsView.as_view(model_admin=self)
         )
         return super().get_urls() + [
-            path(
-                "custom-patients-import", custom_patients_import, name="custom_patients_import"
-            ),
+            path("custom-patients-import", custom_patients_import, name="custom_patients_import"),
         ]
 
     @action(description=_("Bulk import"), url_path="changelist-action", permissions=["changelist_action"])
     def changelist_action(self, request: HttpRequest):
-        return redirect(
-          reverse_lazy("admin:custom_patients_import")
-        )
+        return redirect(reverse_lazy("admin:custom_patients_import"))
+
     def has_changelist_action_permission(self, request: HttpRequest):
-        # Write your own bussiness logic. Code below will always display an action.
         return True
+
 
 @admin.register(PatientMedication)
 class PatientMedicationAdmin(ModelAdmin):
-    list_display = ('patient', 'medication', 'dosage', 'start_date', 'next_refill_date', 'is_active')
+    list_display = (
+        'patient', 'medication', 'dosage',
+        'start_date', 'next_refill_date', 'is_active'
+    )
     list_filter = ('is_active', 'medication', 'start_date', 'next_refill_date')
     search_fields = ('patient__first_name', 'patient__last_name', 'medication__name')
     date_hierarchy = 'next_refill_date'
     actions = ['update_refill_dates']
-    
+
     def update_refill_dates(self, request, queryset):
         for patient_med in queryset:
             patient_med.update_next_refill_date()
         self.message_user(request, f"Updated refill dates for {queryset.count()} medications.")
-    
+
     update_refill_dates.short_description = "Update next refill dates"
 
+@admin.register(CorporateClient)
+class CorporateClientAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contact_person','contact_email','contact_phone')
+    list_filter = ('name', 'contact_person','contact_email','contact_phone') 
+    search_fields = ('name', 'contact_person','contact_email','contact_phone')
 
 @admin.register(NotificationType)
 class NotificationTypeAdmin(ModelAdmin):

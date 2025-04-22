@@ -132,7 +132,8 @@ STATIC_ROOT = os.path.join("static")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATICFILES_DIRS = (
     ("css", BASE_DIR / "assets/css"),
-    ("js", BASE_DIR / "assets/js")
+    ("js", BASE_DIR / "assets/js"),
+    ("images", BASE_DIR / "assets/images")
 )
 
 
@@ -159,19 +160,70 @@ WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')
 
 # Unfold admin settings
 UNFOLD = {
-    "SITE_TITLE": "Well PATIENT",
-    "SITE_HEADER": "Well PATIENT",
-    "SITE_SYMBOL": "local_pharmacy",  # From Material symbols
+    "SITE_TITLE": "WELL PATIENT",
+    "SITE_HEADER": "WELL PATIENT",
+    "SITE_SYMBOL": "local_pharmacy",
     "SHOW_HISTORY": False,
     "SHOW_VIEW_ON_SITE": True,
     "DASHBOARD_CALLBACK": "patients.views.dashboard_callback",
     "THEME": "light",
+    "SITE_ICON": {
+        "light": lambda request: static("images/favicon.ico"),
+        "dark": lambda request: static("images/favicon.ico"),
+    },
+    "SITE_LOGO": {
+        "light": lambda request: static("images/favicon-96x96.png"),
+        "dark": lambda request: static("images/favicon-96x96.png"),
+    },
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "type": "image/x-icon",
+            "href": lambda request: static("images/favicon.ico"),
+        },
+    ],
     "STYLES": [
         lambda request: static("css/custom.css"),
     ],
     "SCRIPTS": [
         lambda request: static("js/custom.js"),
     ],
+    "COLORS": {
+"base": {
+            "50": "249 250 251",
+            "100": "243 244 246",
+            "200": "229 231 235",
+            "300": "209 213 219",
+            "400": "156 163 175",
+            "500": "107 114 128",
+            "600": "75 85 99",
+            "700": "55 65 81",
+            "800": "31 41 55",
+            "900": "17 24 39",
+            "950": "3 7 18",
+        },
+    "primary": {
+        "50": "240 253 244",
+        "100": "220 252 231",
+        "200": "187 247 208",
+        "300": "134 239 172",
+        "400": "74 222 128",
+        "500": "34 197 94",
+        "600": "22 163 74",
+        "700": "21 128 61",
+        "800": "22 101 52",
+        "900": "20 83 45",
+        "950": "5 46 22"
+    },
+    "font": {
+        "subtle-light": "var(--color-base-500)",
+        "subtle-dark": "var(--color-base-400)",
+        "default-light": "var(--color-base-600)",
+        "default-dark": "var(--color-base-300)",
+        "important-light": "var(--color-base-900)",
+        "important-dark": "var(--color-base-100)"
+    }
+},
         "SIDEBAR": {
         "show_search": False,  # Search in applications and models names
         "show_all_applications": False,  # Dropdown with all applications and models
@@ -205,23 +257,29 @@ UNFOLD = {
                     },
                 ]
                         },
-                        {
-                "title": _("Client Management"),
-                "separator": True,
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": _("Patients"),
-                        "icon": "people",
-                        "link": reverse_lazy("admin:patients_patient_changelist"),
-                    },
-                     {
-                        "title": _("patient Medication"),
-                        "icon": "medical_information ",
-                        "link": reverse_lazy("admin:patients_patientmedication_changelist"),
-                    },
-                ]
-                        },
+                       {
+    "title": _("Client Management"),
+    "separator": True,
+    "collapsible": False,
+    "items": [
+        {
+            "title": _("Patients"),
+            "icon": "people",
+            "link": reverse_lazy("admin:patients_patient_changelist"),
+        },
+        {
+            "title": _("Patient Medication"),
+            "icon": "medical_information",
+            "link": reverse_lazy("admin:patients_patientmedication_changelist"),
+        },
+       {
+            "title": _("Corporate Clients"),
+            "icon": "business",  # You can replace with any icon name used by your UI
+            "link": reverse_lazy("admin:patients_corporateclient_changelist"),
+        },
+    ]
+},
+
                         {
                 "title": _("Notifications Management"),
                 "separator": True,
