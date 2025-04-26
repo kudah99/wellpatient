@@ -150,7 +150,7 @@ class BroadcastMessageView(UnfoldModelAdminViewMixin, TemplateView):
                 broadcast.locations.set(locations)
 
             if not form.cleaned_data.get('scheduled_time'):
-                send_broadcast_message.delay(broadcast.id)
+               # send_broadcast_message.delay(broadcast.id)
                 messages.success(request, "Broadcast message is being sent.")
             else:
                 messages.success(request, "Broadcast message has been scheduled.")
