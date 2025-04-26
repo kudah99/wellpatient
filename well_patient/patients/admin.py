@@ -33,7 +33,7 @@ from django_celery_beat.admin import CrontabScheduleAdmin as BaseCrontabSchedule
 from django_celery_beat.admin import PeriodicTaskAdmin as BasePeriodicTaskAdmin
 from django_celery_beat.admin import PeriodicTaskForm, TaskSelectWidget
 from unfold.widgets import UnfoldAdminSelectWidget, UnfoldAdminTextInputWidget
-
+from unfold.admin import StackedInline, TabularInline
 
 # Unregister default User and Group admin
 admin.site.unregister(Group)
@@ -75,7 +75,7 @@ class MedicationAdmin(ModelAdmin):
     patient_count.short_description = 'Patients'
 
 
-class PatientMedicationInline(admin.TabularInline):
+class PatientMedicationInline(TabularInline):
     model = PatientMedication
     extra = 1
     fields = ('medication', 'dosage', 'start_date', 'next_refill_date', 'is_active')
@@ -94,6 +94,8 @@ class PatientAdmin(ModelAdmin):
         'notification_preference', 'is_active'
     )
     search_fields = ('first_name', 'last_name', 'phone_number')
+    def get_inline_title(self):
+        return "Medical Information and refill dates"
     inlines = [PatientMedicationInline]
 
     fieldsets = (
