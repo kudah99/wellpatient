@@ -68,3 +68,4 @@ wcwidth==0.2.13
 whatsapp-python==4.3.0
 whitenoise==6.9.0
 yarl==1.18.3
+
