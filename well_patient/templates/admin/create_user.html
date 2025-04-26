@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% load i18n static unfold widget_tweaks %} 
+{% block extra_head %}
+<!-- Google Material Symbols and Font Awesome -->
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+{% endblock %}
+
+{% block title %}
+    {% if subtitle %}
+        {{ subtitle }} |
+    {% endif %}
+
+    {{ title }} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+{% block base %}
+<div id="page" class="flex min-h-screen">
+  {% if not is_popup and is_nav_sidebar_enabled %} {% block nav-sidebar %} 
+  {%  include "admin/nav_sidebar.html" %} {% endblock %} {% endif %}
+
+  <div id="main" class="flex-grow min-w-0" x-resize="mainWidth = $width">
+    {% block content_before %}
+     {% include "unfold/helpers/header.html" %}
+     {%endblock %} {% if not is_popup %}
+      {% spaceless %} 
+      {% block breadcrumbs %}{%endblock %} 
+      {% endspaceless %} {% endif %}
+
+    <div class="px-4 lg:px-8">
+      <div
+        id="content"
+        class="container mx-auto {% block coltype %}colM{% endblock %}"
+      >
+        {% block content %} {% block object-tools %}{% endblock %}
+
+
+
+
+        {% endblock %}
+        {% endblock %}

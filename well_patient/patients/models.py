@@ -4,7 +4,7 @@ from model_utils import FieldTracker
 import datetime
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-
+from account.models import CustomUser
 
 class Location(models.Model):
     name = models.CharField(max_length=255)
@@ -247,7 +247,7 @@ class BroadcastMessage(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='DRAFT')
     scheduled_time = models.DateTimeField(null=True, blank=True)
     
-    created_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    created_by = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

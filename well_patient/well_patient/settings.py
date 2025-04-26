@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'import_export',
-    'patients'
+    'patients',
+    'account'
 ]
 
 MIDDLEWARE = [
@@ -62,6 +63,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'well_patient.urls'
+
+AUTH_USER_MODEL = 'account.CustomUser'
 
 TEMPLATES = [
     {
@@ -84,12 +87,18 @@ WSGI_APPLICATION = 'well_patient.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'wellpatient_prod',
+        'USER': 'chris',
+        'PASSWORD': 'vd7uHW1M',
+        'HOST': 'localhost',
+        'PORT': 5432
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -236,6 +245,18 @@ UNFOLD = {
                         "title": _("Dashboard"),
                         "icon": "Dashboard",
                         "link": reverse_lazy("admin:index"),
+                    },
+                    
+                ],
+            },
+            {
+                "title": _("Manage Admin Accounts"),
+                "separator": True,
+                "items": [
+                    {
+                        "title": _("Users"),
+                        "icon": "Person",
+                        "link": reverse_lazy("admin:account_customuser_changelist"),
                     },
                     
                 ],

@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.utils import timezone
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.urls import path
 from unfold.admin import ModelAdmin
 from django.shortcuts import redirect
@@ -36,19 +36,8 @@ from unfold.widgets import UnfoldAdminSelectWidget, UnfoldAdminTextInputWidget
 
 
 # Unregister default User and Group admin
-admin.site.unregister(User)
 admin.site.unregister(Group)
 
-# Register User admin with Unfold styling
-@admin.register(User)
-class UnfoldUserAdmin(ModelAdmin):
-    form = UserChangeForm
-    add_form = UserCreationForm
-    change_password_form = AdminPasswordChangeForm
-    list_display = ('username', 'first_name', 'last_name', 'is_staff')
-    search_fields = ('first_name', 'last_name',)
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
-    ordering = ('username',)
 
 
 # Register Group admin with Unfold styling
@@ -154,7 +143,7 @@ class PatientMedicationAdmin(ModelAdmin):
     update_refill_dates.short_description = "Update next refill dates"
 
 @admin.register(CorporateClient)
-class CorporateClientAdmin(admin.ModelAdmin):
+class CorporateClientAdmin(ModelAdmin):
     list_display = ('name', 'contact_person','contact_email','contact_phone')
     list_filter = ('name', 'contact_person','contact_email','contact_phone') 
     search_fields = ('name', 'contact_person','contact_email','contact_phone')
