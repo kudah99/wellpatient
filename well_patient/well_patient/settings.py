@@ -90,10 +90,15 @@ WSGI_APPLICATION = 'well_patient.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'well_patient',
+        'USER': 'chris',
+        'PASSWORD': 'vd7uHW1M',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -251,7 +256,7 @@ UNFOLD = {
                     {
                         "title": _("Users"),
                         "icon": "Person",
-                        "link": reverse_lazy("admin:index"),
+                        "link": reverse_lazy("admin:accounts_customuser_changelist"),
                     },
                     
                 ],
