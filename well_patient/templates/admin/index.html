@@ -160,13 +160,27 @@
             </div>
 
             <div class="flex gap-3">
-              <a
-                href="/"
-                class="flex items-center font-medium px-6 py-3 rounded-xl bg-white shadow-sm text-gray-700 hover:bg-gray-50 transition-all duration-300"
-              >
-                <span class="material-symbols-outlined mr-2">home</span>
-                Dashboard
-              </a>
+              <div class="px-6">
+                <a  href="{% url 'admin:platform_users' %}?platform=WHATSAPP">
+                    <div class="relative flex items-center p-4 px-5 py-6 shadow-sm rounded-md bg-base-50 ">
+                        <div class="p-4 rounded-full bg-green-600 bg-opacity-75">
+                            <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                      d="M12.073 0C5.405 0 0 5.405 0 12.073c0 2.129.553 4.237 1.605 6.1L.073 24l5.955-1.548a12.048 12.048 0 0 0 6.045 1.547c6.668 0 12.073-5.405 12.073-12.073S18.741 0 12.073 0zm6.371 17.422c-.264.74-1.048 1.366-1.794 1.554-.482.121-1.096.217-3.176-.672-2.662-1.103-4.354-3.621-4.488-3.782-.132-.16-1.067-1.422-1.067-2.708s.673-1.92.913-2.177c.241-.256.523-.32.698-.32.173 0 .348.002.5.009.162.007.38-.062.593.456.214.517.729 1.78.795 1.91.064.128.106.277.02.437s-.12.26-.238.385c-.12.121-.253.27-.362.361-.113.095-.231.198-.105.392.127.193.564.926 1.214 1.502.838.734 1.547.963 2.03 1.174.205.086.325.073.449-.044.128-.126.514-.605.652-.814s.277-.177.469-.121c.193.055 1.219.574 1.425.678.205.104.342.157.393.246.049.09.049.525-.217 1.265z" />
+                            </svg>
+                        </div>
+                        <div class="mx-8 p-4">
+                            <h4 class="text-2xl font-semibold text-gray-700">{{total_users}}</h4>
+                            <div class="text-gray-500">WhatsApp</div>
+                        </div>
+                        <!-- Badge for live chat requests -->
+                        <div class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold rounded-full px-2 py-1">
+                           
+                        </div>
+                    </div>
+                </a>
+            </div>
+
 
               <a
                 href="{% url 'admin:broadcast_message_create' %}"

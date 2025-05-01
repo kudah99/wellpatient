@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'django_celery_results',
     'import_export',
     'patients',
-    'account'
+    'account',
+    'message_logs'
 ]
 
 MIDDLEWARE = [
@@ -87,18 +88,12 @@ WSGI_APPLICATION = 'well_patient.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'wellpatient_prod',
-        'USER': 'chris',
-        'PASSWORD': 'vd7uHW1M',
-        'HOST': 'localhost',
-        'PORT': 5432
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -256,7 +251,7 @@ UNFOLD = {
                     {
                         "title": _("Users"),
                         "icon": "Person",
-                        "link": reverse_lazy("admin:account_customuser_changelist"),
+                        "link": reverse_lazy("admin:index"),
                     },
                     
                 ],

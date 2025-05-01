@@ -14,6 +14,7 @@ urlpatterns = [
     path('wellpatient/', include("patients.urls")),
      path("", RedirectView.as_view(url="/admin/", permanent=False)),
     path('admin/', admin.site.urls),
+    path('chat/', include("message_logs.urls")),
 ]
 
 # Serve static and media files during development
