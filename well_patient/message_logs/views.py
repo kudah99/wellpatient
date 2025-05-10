@@ -25,7 +25,7 @@ class ChatDashboardView(UnfoldModelAdminViewMixin, TemplateView):
         # Get query parameters
         platform_filter = self.request.GET.get("platform")
         search_query = self.request.GET.get("search", "").strip()
-        user_id = self.kwargs.get("user_id")
+        user_id = 1
 
         # Subquery to get the latest message timestamp for each user
         latest_message_subquery = (

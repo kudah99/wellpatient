@@ -29,7 +29,7 @@
   .card-hover:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    border-left-color: var(--primary);
+    border-left-color: var(--green);
   }
 
   .stat-card {
@@ -69,12 +69,12 @@
     }
   }
 
-  .btn-primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  .btn-green {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
     transition: all 0.3s ease;
   }
 
-  .btn-primary:hover {
+  .btn-green:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3),
       0 2px 4px -1px rgba(99, 102, 241, 0.2);
@@ -149,10 +149,10 @@
               <h1
                 class="text-2xl font-bold text-gray-800 flex items-center gap-3"
               >
-                <span class="material-symbols-outlined text-primary-500"
+                <span class="material-symbols-outlined text-green-500"
                   >dashboard</span
                 >
-                Well PATIENT Dashboard
+                WELL PATIENT Dashboard
               </h1>
               <p class="text-gray-500 mt-1">
                 Welcome back! Here's what's happening today.
@@ -184,7 +184,7 @@
 
               <a
                 href="{% url 'admin:broadcast_message_create' %}"
-                class="flex items-center font-medium px-6 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-md hover:shadow-lg transition-all duration-300 btn-primary"
+                class="flex items-center font-medium px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:shadow-lg transition-all duration-300 btn-green"
               >
                 <span class="material-symbols-outlined mr-2">send</span>
                 New Broadcast
@@ -207,7 +207,7 @@
                   </h2>
                   <a
                     href="{% url 'admin:patients_patient_changelist' %}"
-                    class="inline-flex items-center mt-4 text-primary-600 hover:text-primary-800 transition-colors text-sm font-medium"
+                    class="inline-flex items-center mt-4 text-green-600 hover:text-green-800 transition-colors text-sm font-medium"
                   >
                     View all patients
                     <span
@@ -237,7 +237,7 @@
                   </h2>
                   <a
                     href="/admin/patients/location/"
-                    class="inline-flex items-center mt-4 text-primary-600 hover:text-primary-800 transition-colors text-sm font-medium"
+                    class="inline-flex items-center mt-4 text-green-600 hover:text-green-800 transition-colors text-sm font-medium"
                   >
                     Manage locations
                     <span
@@ -267,7 +267,7 @@
                   </h2>
                   <a
                     href="/admin/patients/medication/"
-                    class="inline-flex items-center mt-4 text-primary-600 hover:text-primary-800 transition-colors text-sm font-medium"
+                    class="inline-flex items-center mt-4 text-green-600 hover:text-green-800 transition-colors text-sm font-medium"
                   >
                     Manage medications
                     <span
@@ -540,7 +540,7 @@
               </h2>
               <a
                 href="{% url 'admin:broadcast_messages' %}"
-                class="text-sm font-medium text-primary-600 hover:text-primary-800 flex items-center"
+                class="text-sm font-medium text-green-600 hover:text-green-800 flex items-center"
               >
                 View all
                 <span

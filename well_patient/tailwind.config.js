@@ -2,10 +2,8 @@ module.exports = {
     content: [
         "./templates/*.html",
         "./templates/admin/**/*.html",
-        "./templates/chats/*.html",
-        "./templates/**/**/*.html",
-        "**/templates/**/*.html",
-        "**/templates/*.html",
+        "./templates/**/*.html",
+        "./templates/**/**/*.html"
     ],
     media: false,
     darkMode: "class",

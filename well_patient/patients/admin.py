@@ -64,7 +64,7 @@ class LocationAdmin(ModelAdmin):
 
 @admin.register(Medication)
 class MedicationAdmin(ModelAdmin):
-    list_display = ('name', 'refill_period_days', 'patient_count')
+    list_display = ('name', 'patient_count')
     search_fields = ('name',)
     list_filter = ('refill_period_days',)
 

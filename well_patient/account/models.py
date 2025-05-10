@@ -12,7 +12,7 @@ zimbabwe_phone_validator = RegexValidator(
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True, validators=[EmailValidator()],null=True,blank=True)
+    email = models.EmailField( validators=[EmailValidator()],null=True,blank=True)
     whatsapp_number = models.CharField(
         max_length=15,
         validators=[zimbabwe_phone_validator],

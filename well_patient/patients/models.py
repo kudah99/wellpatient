@@ -116,7 +116,9 @@ class Patient(models.Model):
     def get_payment_group(self):
         """Returns the group range the patient belongs to based on amount_paid."""
         amount = self.amount_paid
-        if amount <= 50:
+        if amount <= 10:
+            return '0 - 50'
+        elif amount <= 50:
             return '10 - 50'
         elif amount <= 100:
             return '51 - 100'

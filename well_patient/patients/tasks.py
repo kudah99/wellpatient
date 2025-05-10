@@ -215,11 +215,7 @@ def process_scheduled_broadcasts():
         status='SCHEDULED',
         scheduled_time__lte=now
     )
-    print("****************************************************************")
-    print(broadcasts)
     for broadcast in broadcasts:
-        print("################################")
         send_broadcast_message.delay(broadcast.pk)
-        print("******888888888888888888888888888888")
     
     return f"Processed {broadcasts.count()} scheduled broadcasts"
