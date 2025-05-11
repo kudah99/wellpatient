@@ -87,11 +87,33 @@ WSGI_APPLICATION = 'well_patient.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+
+
 DATABASES = {
+
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+
+
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+
+
+        'NAME': 'well_patient',
+
+
+        'USER': 'chris',
+
+
+        'PASSWORD': 'vd7uHW1M',
+
+
+        'HOST': 'localhost',
+
+
+        'PORT': '5432',
+
     }
+
 }
 
 
