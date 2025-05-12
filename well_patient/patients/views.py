@@ -7,6 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 from django.utils import timezone
 from django.db.models import  Q
+from django.db.models import OuterRef, Subquery
+from account.models import CustomUser as User
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -56,6 +58,18 @@ def dashboard_callback(request, context):
     ).order_by('scheduled_time')[:5]
 
     total_users = non_admin_users.count()
+
+    latest_message_subquery = (
+            MessageLog.objects.filter(user=OuterRef("pk"))
+            .order_by("-timestamp")
+            .values("timestamp")[:1]
+        )
+
+   # Fisrt chat to be shown
+    user = User.objects.annotate(
+            last_message_time=Subquery(latest_message_subquery)
+        ).order_by("-live", "-last_message_time").first()
+    
     
     context.update({
         'title': "WELL PATIENT Administration",
@@ -65,7 +79,8 @@ def dashboard_callback(request, context):
         'recent_notifications': recent_notifications,
         'upcoming_refills': upcoming_refills,
         'pending_broadcasts': pending_broadcasts,
-        'total_users':total_users
+        'total_users':total_users,
+        'user':user
     })
     return context
 

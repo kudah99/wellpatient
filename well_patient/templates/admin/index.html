@@ -152,7 +152,7 @@
                 <span class="material-symbols-outlined text-green-500"
                   >dashboard</span
                 >
-                WELL PATIENT Dashboard
+                WELLPATIENT Dashboard
               </h1>
               <p class="text-gray-500 mt-1">
                 Welcome back! Here's what's happening today.
@@ -161,7 +161,7 @@
 
             <div class="flex gap-3">
               <div class="px-6">
-                <a  href="{% url 'admin:platform_users' %}?platform=WHATSAPP">
+                <a  href="{% url 'admin:platform_users' user.id  %}">
                     <div class="relative flex items-center p-4 px-5 py-6 shadow-sm rounded-md bg-base-50 ">
                         <div class="p-4 rounded-full bg-green-600 bg-opacity-75">
                             <svg class="h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
