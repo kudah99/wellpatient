@@ -30,7 +30,7 @@ class MessageLogAdmin(admin.ModelAdmin):
             #     self.admin_site.admin_view(PlatiformChat.as_view(model_admin=self)),
             #     name="platform_chat",
             # ),
-            path('platform-chat/', self.admin_site.admin_view(ChatDashboardView.as_view(model_admin=self)), name='platform_users'),
-            path('platform-chat/<int:user_id>/',self.admin_site.admin_view(ChatDashboardView.as_view(model_admin=self)), name='platform_chat'),
+            path('platform-chat/<int:user_id>/', self.admin_site.admin_view(ChatDashboardView.as_view(model_admin=self)), name='platform_users'),
+            path('platform-chat/<int:user_id>/',self.admin_site.admin_view(ChatDashboardView.as_view(model_admin=self)), name='platform_chat')
         ]
         return custom_urls + super().get_urls()
